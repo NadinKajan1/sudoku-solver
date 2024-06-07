@@ -39,11 +39,17 @@ pygame.display.set_caption("Sudoku Solver")
 white = (255,255,255)
 black = (0,0,0)
 gray = (200,200,200)
+red = (255,0,0)
+green = (0,255,0)
+blue = (0,0,255)
 font = pygame.font.SysFont(None, 36)
 
 # Defining grid parameters
 grid_size = 9
 cell_size = screen_width // grid_size
+
+# Stat bar items
+strikes = 0 # Number of times user inputs an invalid number
 
 # Drawing game board
 def draw_grid():
@@ -52,6 +58,8 @@ def draw_grid():
         pygame.draw.line(screen, black, (i * cell_size, 0), (i * cell_size, screen_height), line_width)
         pygame.draw.line(screen, black, (0, i * cell_size), (screen_width, i * cell_size), line_width)
     pygame.draw.line(screen, black, (0,540), (540,540), 3) # Additional bottom line to separate stat bar
+
+
 
 # Initializing board with given numbers
 def draw_numbers(board):
@@ -85,6 +93,9 @@ def select_cell(event):
         if mouse_y < 540:  # Checking if user clicked within grid & not stat bar
             row = mouse_y // cell_size
             col = mouse_x // cell_size
+            pygame.draw.rect(screen, blue,
+                             (col * cell_size, row * cell_size, cell_size, cell_size),
+                             width=2)
             return row, col
     return None
 
@@ -110,6 +121,11 @@ def user_input(event, cell, board):
             if not initial_board[row][col]: # Checks if selected cell has a given number
                 num = event.key - 48 # Converts key to corresponding number
                 board[row][col] = num
+
+                if is_valid(board, num, cell):
+                    print("YAY")
+                else:
+                    print("BOO")
 
         # User deleting an input
         elif event.key == pygame.K_DELETE:
