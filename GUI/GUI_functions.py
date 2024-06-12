@@ -1,6 +1,5 @@
 from src import *
 import pygame
-import time
 import sys
 from game_state import game_state
 
@@ -60,7 +59,16 @@ text_rect = game_over_text.get_rect(center=(screen_width // 2, screen_height // 
 
 # Restart button
 restart_text_surface = font.render("Restart", True, black)
-restart_rect = restart_text_surface.get_rect(center=(170 + 200 / 2, 300 + 50 / 2))
+restart_rect = restart_text_surface.get_rect(center=(270, 325))
+
+# Timer text
+timer_text_surface = font.render("Timer:", True, black)
+timer_text_rect = timer_text_surface.get_rect(center=(370,590))
+
+# Timer variables
+timer = 0
+clock = pygame.time.Clock()
+clock_paused = False # Flag to stop timer when game is over
 
 # Drawing game board
 def draw_grid():
@@ -69,6 +77,7 @@ def draw_grid():
         pygame.draw.line(screen, black, (i * cell_size, 0), (i * cell_size, screen_height), line_width)
         pygame.draw.line(screen, black, (0, i * cell_size), (screen_width, i * cell_size), line_width)
     pygame.draw.line(screen, black, (0,540), (540,540), 3) # Additional bottom line to separate stat bar
+    screen.blit(timer_text_surface, timer_text_rect) # Adding the word "Timer:" in the stat bar
 
 
 
@@ -142,22 +151,72 @@ def user_input(event, cell, board):
                 board[row][col] = 0
                 pygame.draw.rect(screen, (255, 255, 255), (col * cell_size, row * cell_size, cell_size, cell_size))
 
-# Checks for 3 strikes, sets game_over bool to True, presents restart button
+# Checks for 3 strikes, presents restart button
 def game_over_check():
+    global clock_paused
     if game_state.strikes == 3:
+        clock_paused = True
         screen.blit(game_over_text, text_rect) # Display game over text
 
         # Drawing restart button
         pygame.draw.rect(screen, white, (170,300,200,50))
         pygame.draw.rect(screen, black, (170, 300, 200, 50),2)
         screen.blit(restart_text_surface, restart_rect)
-        return True # Return True for game_over bool
-    return False
 
-# Resets strikes to 0, removes all user inputs, resets the time
+
+# Checks if user clicks the restart button
 def restart_clicked(event):
     if event.type == pygame.MOUSEBUTTONDOWN:
         mouse_x, mouse_y = pygame.mouse.get_pos()
 
-        if (mouse_x <= 370 and mouse_x >= 170) and (mouse_y <= 350 and mouse_y >= 300):
-            print("RESTART PRESSED")
+        if (mouse_x <= 370 and mouse_x >= 170) and (mouse_y <= 350 and mouse_y >= 300): # If the user clicks the restart button
+            reset_game()
+
+# Resets strikes to 0, removes all user inputs, resets the time
+def reset_game():
+    global board, selected_cell, clock_paused, timer, clock
+
+    # Reset the board to the initial state
+    board[:] = [
+        [7, 8, 0, 4, 0, 0, 1, 2, 0],
+        [6, 0, 0, 0, 7, 5, 0, 0, 9],
+        [0, 0, 0, 6, 0, 1, 0, 7, 8],
+        [0, 0, 7, 0, 4, 0, 2, 6, 0],
+        [0, 0, 1, 0, 5, 0, 9, 3, 0],
+        [9, 0, 4, 0, 6, 0, 0, 0, 5],
+        [0, 7, 0, 3, 0, 0, 0, 1, 2],
+        [1, 2, 0, 0, 0, 7, 4, 0, 0],
+        [0, 4, 9, 2, 0, 6, 0, 0, 7]
+    ]
+
+    # Resetting game variables to original values
+    game_state.strikes = 0
+    selected_cell = None
+    clock_paused = False
+    timer = 0
+    clock = pygame.time.Clock()
+
+    # Clear the screen
+    screen.fill(white)
+    draw_grid()
+    draw_numbers(board)
+    pygame.display.update()
+
+# Display time found in main loop
+def display_time(time):
+    # Formatting time into a displayable format
+    minutes = time // 60
+    seconds = time % 60
+    time_str = '{:02d}:{:02d}'.format(int(minutes), int(seconds))
+
+    timer_surface = font.render(time_str, True, black)
+    timer_rect = timer_surface.get_rect(center=(470, 590))
+    screen.blit(timer_surface, timer_rect)
+
+# Calculate elapsed time
+def timer_function():
+    global timer, clock, clock_paused
+    if not clock_paused:
+        milliseconds = clock.tick(60)
+        timer += milliseconds / 1000
+        display_time(int(timer))

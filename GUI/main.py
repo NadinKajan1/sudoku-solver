@@ -1,19 +1,16 @@
 from src import *
 from GUI_functions import *
 import pygame
-import time
 import sys
 from game_state import game_state
 
 selected_cell = None # Initializing variable to track selected cell
-strike_counted = False
-game_over = False # If three invalid inputs are detected, the game is over
-
 
 # Game loop to handle user inputs & updates to the UI
 while True:
 
-    while game_over == True:
+    # Nested loop to handle "game over" state
+    while game_state.strikes == 3:
         for event in pygame.event.get():
             quit_game(event)
             restart_clicked(event)
@@ -58,8 +55,7 @@ while True:
         for i in range(game_state.strikes):
             screen.blit(strike_symbol, ((10 + 30*i),600))
 
-    game_over = game_over_check()
-
-
+    game_over_check()
+    timer_function()
 
     pygame.display.update()
