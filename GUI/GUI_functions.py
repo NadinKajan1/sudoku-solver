@@ -2,6 +2,7 @@ from src import *
 import pygame
 import time
 import sys
+from game_state import game_state
 
 board = [
     [7,8,0,4,0,0,1,2,0],
@@ -48,8 +49,18 @@ font = pygame.font.SysFont(None, 36)
 grid_size = 9
 cell_size = screen_width // grid_size
 
-# Stat bar items
-strikes = 0 # Number of times user inputs an invalid number
+# Strike Symbol for when user enters invalid input
+strike_symbol = pygame.image.load("strike_symbol.jpg")
+strike_symbol = pygame.transform.scale(strike_symbol, (30,30))
+
+# Game over text for when user enters 3 invalid inputs
+game_over_font = pygame.font.SysFont(None, 72) # Game over message
+game_over_text = game_over_font.render("Game Over", True, red)
+text_rect = game_over_text.get_rect(center=(screen_width // 2, screen_height // 2))
+
+# Restart button
+restart_text_surface = font.render("Restart", True, black)
+restart_rect = restart_text_surface.get_rect(center=(170 + 200 / 2, 300 + 50 / 2))
 
 # Drawing game board
 def draw_grid():
@@ -122,10 +133,8 @@ def user_input(event, cell, board):
                 num = event.key - 48 # Converts key to corresponding number
                 board[row][col] = num
 
-                if is_valid(board, num, cell):
-                    print("YAY")
-                else:
-                    print("BOO")
+                if not is_valid(board, num, cell): # Increments strikes for every invalid input
+                    game_state.strikes += 1
 
         # User deleting an input
         elif event.key == pygame.K_DELETE:
@@ -133,3 +142,22 @@ def user_input(event, cell, board):
                 board[row][col] = 0
                 pygame.draw.rect(screen, (255, 255, 255), (col * cell_size, row * cell_size, cell_size, cell_size))
 
+# Checks for 3 strikes, sets game_over bool to True, presents restart button
+def game_over_check():
+    if game_state.strikes == 3:
+        screen.blit(game_over_text, text_rect) # Display game over text
+
+        # Drawing restart button
+        pygame.draw.rect(screen, white, (170,300,200,50))
+        pygame.draw.rect(screen, black, (170, 300, 200, 50),2)
+        screen.blit(restart_text_surface, restart_rect)
+        return True # Return True for game_over bool
+    return False
+
+# Resets strikes to 0, removes all user inputs, resets the time
+def restart_clicked(event):
+    if event.type == pygame.MOUSEBUTTONDOWN:
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+
+        if (mouse_x <= 370 and mouse_x >= 170) and (mouse_y <= 350 and mouse_y >= 300):
+            print("RESTART PRESSED")
