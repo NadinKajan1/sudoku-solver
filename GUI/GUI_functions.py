@@ -57,9 +57,13 @@ game_over_font = pygame.font.SysFont(None, 72) # Game over message
 game_over_text = game_over_font.render("Game Over", True, red)
 text_rect = game_over_text.get_rect(center=(screen_width // 2, screen_height // 2))
 
-# Restart button
+# Restart button text
 restart_text_surface = font.render("Restart", True, black)
 restart_rect = restart_text_surface.get_rect(center=(270, 325))
+
+# Solve button text
+solve_text_surface = font.render("Solve", True, black)
+solve_text_rect = solve_text_surface.get_rect(center=(270,590))
 
 # Timer text
 timer_text_surface = font.render("Timer:", True, black)
@@ -79,7 +83,12 @@ def draw_grid():
     pygame.draw.line(screen, black, (0,540), (540,540), 3) # Additional bottom line to separate stat bar
     screen.blit(timer_text_surface, timer_text_rect) # Adding the word "Timer:" in the stat bar
 
+    # Solve button
+    pygame.draw.rect(screen, white, (220,565,100,50))
+    pygame.draw.rect(screen, black, (220, 565, 100, 50),2)
+    screen.blit(solve_text_surface, solve_text_rect)
 
+#pygame.draw.rect(screen, white, (170,300,200,50))
 
 # Initializing board with given numbers
 def draw_numbers(board):
@@ -220,3 +229,23 @@ def timer_function():
         milliseconds = clock.tick(60)
         timer += milliseconds / 1000
         display_time(int(timer))
+
+def solve_clicked(event):
+    global clock_paused, timer
+    if event.type == pygame.MOUSEBUTTONDOWN:
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+        if mouse_x <= 320 and mouse_x >= 220 and mouse_y <= 615 and mouse_y >= 565:
+            board[:] = [
+                [7, 8, 0, 4, 0, 0, 1, 2, 0],
+                [6, 0, 0, 0, 7, 5, 0, 0, 9],
+                [0, 0, 0, 6, 0, 1, 0, 7, 8],
+                [0, 0, 7, 0, 4, 0, 2, 6, 0],
+                [0, 0, 1, 0, 5, 0, 9, 3, 0],
+                [9, 0, 4, 0, 6, 0, 0, 0, 5],
+                [0, 7, 0, 3, 0, 0, 0, 1, 2],
+                [1, 2, 0, 0, 0, 7, 4, 0, 0],
+                [0, 4, 9, 2, 0, 6, 0, 0, 7]
+            ]
+            print("SOLVING")
+            solve(board)
+            print_board(board)

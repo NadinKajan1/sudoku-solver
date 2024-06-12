@@ -30,6 +30,7 @@ while True:
                 col = selected_cell[1]
 
         user_input(event, selected_cell, board)
+        solve_clicked(event)
 
     screen.fill(white)
     draw_grid()
